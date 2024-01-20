@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <section name="burgers"/>
+  <people>
+    <person>bob</person>
+    <person>louise</person>
+    <person>gene</person>
+    <person>linda</person>
+    <person>teddy</person>
+    <person>tina</person>
+  </people>
+</root>
