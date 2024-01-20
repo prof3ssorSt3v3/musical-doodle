@@ -68,10 +68,35 @@ caches
     console.warn(err.message);
   });
 
-document.body.addEventListener('click', (ev) => {
+document.body.addEventListener('click', async (ev) => {
   //find the section
   //delete the txt file that contains the xml file name
   //delete the xml file
+  let section = ev.target.closest('section');
+  let nm = section.querySelector('h1').textContent;
+  let files = await myCache.matchAll();
+  let urls = [];
+  let txtFiles = await Promise.all(
+    files.map((file) => {
+      let url = new URL(file.url);
+      if (url.pathname.endsWith('.txt')) {
+        urls.push(url.pathname); //name of the txt file
+        return file.text();
+      } else {
+        urls.push(null); //keep the length of the array the same as txtFiles
+        return null;
+      }
+    })
+  );
+  txtFiles.map((fileContent, index) => {
+    //if the txt file content matches the section name then delete the txt file and the xml file
+    if (fileContent != null && fileContent.includes(nm)) {
+      console.log('delete', urls[index], 'and', txtFiles[index]);
+      myCache.delete(urls[index]); //don't need to wait for the result
+      myCache.delete('./' + nm + '.xml'); //don't need to wait for the result
+      section.remove();
+    }
+  });
 });
 
 //find all the txt files in the cache
