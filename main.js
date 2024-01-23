@@ -6,7 +6,7 @@ caches
   .open(cacheName)
   .then((cache) => {
     myCache = cache;
-    return cache.addAll(files);
+    return myCache.addAll(files);
   })
   .then(() => {
     //all the files are in the cache
@@ -22,6 +22,7 @@ caches
         return true;
       }
     });
+    //txtResponses is an array of response objects that are txt files
     return Promise.all(
       txtResponses.map((response) => {
         return response.text();
@@ -31,6 +32,8 @@ caches
   .then((strings) => {
     //find all the xml files from the strings in the txt files
     return Promise.all(strings.map((str) => myCache.match(str)));
+    //cache.match is like fetch(url)
+    //except one is from the cache and one is from the network
   })
   .then((xmlResponses) => {
     //read the xml responses
@@ -41,6 +44,7 @@ caches
         let nm = url.pathname.split('/').pop().replace('.xml', '').replace('/', '');
         document.body.innerHTML += `<section class="${nm}"><h1>${nm}</h1><ul></ul></section>`;
         return response.text();
+        //extract the STRING contents from each XML file
       })
     );
   })
@@ -48,7 +52,7 @@ caches
     //turn all the xml strings into xml documents
     let doms = xmlStrings.map((str) => {
       const parser = new DOMParser();
-      return parser.parseFromString(str, 'application/xml');
+      return parser.parseFromString(str, 'application/xml'); // 'text/html'
       //synchronous NOT asynchronous
     });
     doms.forEach((dom, index) => {
@@ -60,6 +64,7 @@ caches
       ul.innerHTML = Array.from(people)
         .map((person) => {
           return `<li>${person.textContent}</li>`;
+          // return `<li>${person.firstChild.nodeValue}</li>`;
         })
         .join('');
     });
@@ -74,8 +79,9 @@ document.body.addEventListener('click', async (ev) => {
   //delete the xml file
   let section = ev.target.closest('section');
   let nm = section.querySelector('h1').textContent;
-  let files = await myCache.matchAll();
-  let urls = [];
+  let files = await myCache.matchAll(); //get all the files in the cache
+  let urls = []; //text files ['one.txt', null, null, 'two.txt', null, 'three.txt']
+  //txtFiles ['archer.xml', null, null, 'bobsburgers.xml', null, 'supernatural.xml']
   let txtFiles = await Promise.all(
     files.map((file) => {
       let url = new URL(file.url);
@@ -95,6 +101,7 @@ document.body.addEventListener('click', async (ev) => {
       myCache.delete(urls[index]); //don't need to wait for the result
       myCache.delete('./' + nm + '.xml'); //don't need to wait for the result
       section.remove();
+      // section.parentElement.removeChild(section);
     }
   });
 });
